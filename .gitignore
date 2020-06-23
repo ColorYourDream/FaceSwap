@@ -1,4 +1,4 @@
-LightCNN/*.pth
-*.pth
-*.pth.tar
-*.tar
+ijbc_msrunet_256_1_2_blending_v2.pth
+vox-first-order.pth.tar
+lightcnn_150.pth.tar
+LightCNN/LightCNN_29Layers_V2_checkpoint.pth.tar

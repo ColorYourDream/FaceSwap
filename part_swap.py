@@ -114,8 +114,8 @@ class PartSwapGenerator(ReconstructionModule):
         meanN = meanN.cuda()
         stdN = stdN.cuda()
 
-        out = out.mul_(stdN).add_(meanN)
-        target_image = target_image.mul_(stdN).add_(meanN)
+        out = (out - meanN) / stdN
+        target_image = (target_image - meanN) / stdN
 
         blend_input_tensor = torch.cat((out, target_image, blend_mask_hard), dim=1)
         blend_input_tensor_pyd = create_pyramid(blend_input_tensor, 2)
@@ -125,7 +125,7 @@ class PartSwapGenerator(ReconstructionModule):
 
         final_result = blend_tensor * blend_mask_full + target_image * (1 - blend_mask_full)
 
-        final_result = (final_result - meanN) / stdN
+        final_result = final_result.mul_(stdN).add_(meanN)
 
         output_dict["predictionFinal"] = final_result
 
@@ -157,10 +157,10 @@ def load_checkpoints(config, checkpoint, blend_scale=0.125, first_order_motion_m
     else:
         checkpoint = torch.load(checkpoint)
 
-    if cpu:
-        checkpointOriginal = torch.load("vox-adv-cpk.pth.tar", map_location=torch.device('cpu'))
-    else:
-        checkpointOriginal = torch.load("vox-adv-cpk.pth.tar")
+    #if cpu:
+    #    checkpointOriginal = torch.load("vox-adv-cpk.pth.tar", map_location=torch.device('cpu'))
+    #else:
+    #    checkpointOriginal = torch.load("vox-adv-cpk.pth.tar")
 
     load_reconstruction_module(reconstruction_module, checkpoint)
     load_segmentation_module(segmentation_module, checkpoint)
