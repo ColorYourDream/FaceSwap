@@ -1,0 +1,4 @@
+LightCNN/*.pth
+*.pth
+*.pth.tar
+*.tar
