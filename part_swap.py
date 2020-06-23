@@ -108,29 +108,29 @@ class PartSwapGenerator(ReconstructionModule):
         #print(out.shape)
         #print(out.device)
 
-        meanN = torch.Tensor(np.array([0.5, 0.5, 0.5]).reshape(1, 3, 1, 1))
-        stdN = torch.Tensor(np.array([0.5, 0.5, 0.5]).reshape(1, 3, 1, 1))
+        #meanN = torch.Tensor(np.array([0.5, 0.5, 0.5]).reshape(1, 3, 1, 1))
+        #stdN = torch.Tensor(np.array([0.5, 0.5, 0.5]).reshape(1, 3, 1, 1))
 
-        meanN = meanN.cuda()
-        stdN = stdN.cuda()
+        #meanN = meanN.cuda()
+        #stdN = stdN.cuda()
 
-        out = (out - meanN) / stdN
-        target_image = (target_image - meanN) / stdN
+        #out = (out - meanN) / stdN
+        #target_image = (target_image - meanN) / stdN
 
         blend_input_tensor = torch.cat((out, target_image, blend_mask_hard), dim=1)
         blend_input_tensor_pyd = create_pyramid(blend_input_tensor, 2)
         blend_tensor = blending_network(blend_input_tensor_pyd)
 
-        output_dict["predictionBlend"] = blend_tensor
+        #output_dict["predictionBlend"] = blend_tensor
 
         final_result = blend_tensor * blend_mask_full + target_image * (1 - blend_mask_full)
 
-        final_result = final_result.mul_(stdN).add_(meanN)
+        #final_result = final_result.mul_(stdN).add_(meanN)
 
         output_dict["predictionFinal"] = final_result
 
-        meanN.detach()
-        stdN.detach()
+        #meanN.detach()
+        #stdN.detach()
 
         return output_dict
 
@@ -298,9 +298,9 @@ def make_video(swap_index, source_image, target_video, reconstruction_module, se
                                         blend_mask=blend_mask, use_source_segmentation=use_source_segmentation, blending_network=blending_network)
 
             predictions.append(np.transpose(out['prediction'].data.cpu().numpy(), [0, 2, 3, 1])[0])
-            predictionBlend.append(np.transpose(out['predictionBlend'].data.cpu().numpy(), [0, 2, 3, 1])[0])
+            #predictionBlend.append(np.transpose(out['predictionBlend'].data.cpu().numpy(), [0, 2, 3, 1])[0])
             predictionFinal.append(np.transpose(out['predictionFinal'].data.cpu().numpy(), [0, 2, 3, 1])[0])
-        return predictions, predictionBlend, predictionFinal
+        return predictions, predictionFinal
 
 
 
@@ -343,7 +343,7 @@ if __name__ == "__main__":
 
     blending_network = load_blending_network()
 
-    predictions, predictionBlend, predictionFinal = make_video(opt.swap_index, source_image, target_video, reconstruction_module, segmentation_module,
+    predictions, predictionFinal = make_video(opt.swap_index, source_image, target_video, reconstruction_module, segmentation_module,
                              face_parser, blending_network, hard=opt.hard, use_source_segmentation=opt.use_source_segmentation, cpu=opt.cpu)
 
     # Read fps of the target video and save result with the same fps
@@ -352,5 +352,5 @@ if __name__ == "__main__":
     reader.close()
 
     imageio.mimsave(opt.result_video, [img_as_ubyte(frame) for frame in predictions], fps=fps)
-    imageio.mimsave("result_blending.mp4", [img_as_ubyte(frame) for frame in predictionBlend], fps=fps)
+    #imageio.mimsave("result_blending.mp4", [img_as_ubyte(frame) for frame in predictionBlend], fps=fps)
     imageio.mimsave("result_final.mp4", [img_as_ubyte(frame) for frame in predictionFinal], fps=fps)
